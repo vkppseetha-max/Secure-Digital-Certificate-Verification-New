@@ -25,6 +25,7 @@ p{line-height:1.6}
 <p>Scan this QR code to open the certificate verification page.</p>
 <div id="qrcode" aria-label="Certificate verification QR code"></div>
 <a href="{{ url_for('verify', hash=cert_hash) }}">Verify Certificate</a>
+  <a href="{{ url_for('certificate_pdf', cert_hash=cert_hash) }}">Download Certificate PDF</a>
 <a href="{{ url_for('home') }}">Home</a>
 </div>
 <script>
