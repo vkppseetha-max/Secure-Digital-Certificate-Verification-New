@@ -1,2 +1,4 @@
 Flask
 gunicorn
+qrcode[pil]
+reportlab
