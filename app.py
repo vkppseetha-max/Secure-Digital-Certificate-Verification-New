@@ -1,9 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file, abort
 import sqlite3
 import hashlib
 import json
 import os
 from datetime import datetime
+from io import BytesIO
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.pdfgen import canvas
+import qrcode
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 
@@ -210,6 +216,77 @@ def issue():
             flash("Certificate already exists.")
 
     return render_template("issue.html")
+
+
+# DOWNLOAD CERTIFICATE AS PDF
+@app.route("/certificate/<cert_hash>/pdf")
+@login_required
+def certificate_pdf(cert_hash):
+    with connect() as con:
+        row = con.execute(
+            """SELECT student_name, course, certificate_hash, issue_date
+            FROM certificates WHERE certificate_hash=?""",
+            (cert_hash,)
+        ).fetchone()
+
+    if not row:
+        abort(404)
+
+    name, course, saved_hash, issue_date = row
+    verify_url = request.url_root.rstrip("/") + url_for("verify", hash=saved_hash)
+
+    qr_img = qrcode.make(verify_url)
+    qr_buffer = BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+
+    output = BytesIO()
+    page = landscape(A4)
+    pdf = canvas.Canvas(output, pagesize=page)
+    width, height = page
+
+    # Elegant certificate border
+    pdf.setFillColor(colors.HexColor("#F8FAFC"))
+    pdf.rect(0, 0, width, height, fill=1, stroke=0)
+    pdf.setStrokeColor(colors.HexColor("#0F766E"))
+    pdf.setLineWidth(4)
+    pdf.rect(12*mm, 12*mm, width-24*mm, height-24*mm, fill=0, stroke=1)
+    pdf.setStrokeColor(colors.HexColor("#D4AF37"))
+    pdf.setLineWidth(1.2)
+    pdf.rect(16*mm, 16*mm, width-32*mm, height-32*mm, fill=0, stroke=1)
+
+    pdf.setFillColor(colors.HexColor("#0F766E"))
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawCentredString(width/2, height-35*mm, "SECURE DIGITAL CERTIFICATE VERIFICATION")
+    pdf.setFillColor(colors.HexColor("#1E293B"))
+    pdf.setFont("Helvetica-Bold", 27)
+    pdf.drawCentredString(width/2, height-53*mm, "CERTIFICATE OF COMPLETION")
+    pdf.setFont("Helvetica", 12)
+    pdf.setFillColor(colors.HexColor("#475569"))
+    pdf.drawCentredString(width/2, height-68*mm, "This demo certificate is presented to")
+    pdf.setFillColor(colors.HexColor("#0F172A"))
+    pdf.setFont("Helvetica-Bold", 24)
+    pdf.drawCentredString(width/2, height-84*mm, name)
+    pdf.setFont("Helvetica", 13)
+    pdf.setFillColor(colors.HexColor("#475569"))
+    pdf.drawCentredString(width/2, height-96*mm, "for the course")
+    pdf.setFillColor(colors.HexColor("#0F766E"))
+    pdf.setFont("Helvetica-Bold", 18)
+    pdf.drawCentredString(width/2, height-108*mm, course)
+
+    pdf.setFillColor(colors.HexColor("#334155"))
+    pdf.setFont("Helvetica", 10)
+    pdf.drawString(27*mm, 37*mm, "Certificate ID: " + saved_hash[:12].upper())
+    pdf.drawString(27*mm, 29*mm, "Issue date: " + issue_date[:10])
+    pdf.drawString(27*mm, 21*mm, "SHA-256: " + saved_hash[:40] + "...")
+    pdf.drawImage(qr_buffer, width-49*mm, 23*mm, width=25*mm, height=25*mm, preserveAspectRatio=True, mask="auto")
+    pdf.setFont("Helvetica", 8)
+    pdf.drawRightString(width-22*mm, 18*mm, "Scan QR to verify online | DEMO")
+    pdf.showPage()
+    pdf.save()
+    output.seek(0)
+    return send_file(output, mimetype="application/pdf", as_attachment=True,
+                     download_name="Certificate_" + saved_hash[:12] + ".pdf")
 
 
 # VERIFY CERTIFICATE
