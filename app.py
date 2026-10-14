@@ -5,6 +5,7 @@ import json
 import os
 from datetime import datetime
 from io import BytesIO
+from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
@@ -279,7 +280,7 @@ def certificate_pdf(cert_hash):
     pdf.drawString(27*mm, 37*mm, "Certificate ID: " + saved_hash[:12].upper())
     pdf.drawString(27*mm, 29*mm, "Issue date: " + issue_date[:10])
     pdf.drawString(27*mm, 21*mm, "SHA-256: " + saved_hash[:40] + "...")
-    pdf.drawImage(qr_buffer, width-49*mm, 23*mm, width=25*mm, height=25*mm, preserveAspectRatio=True, mask="auto")
+    pdf.drawImage(ImageReader(qr_buffer), width-49*mm, 23*mm, width=25*mm, height=25*mm, preserveAspectRatio=True, mask="auto")
     pdf.setFont("Helvetica", 8)
     pdf.drawRightString(width-22*mm, 18*mm, "Scan QR to verify online | DEMO")
     pdf.showPage()
