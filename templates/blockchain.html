@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blockchain Records</title>
+<style>
+body{font-family:Arial;background:#101a35;color:white;padding:20px}
+.box{max-width:900px;margin:auto}
+.block{background:#ffffff12;border:1px solid #21c7a8;padding:20px;margin:18px 0;border-radius:12px}
+.hash{overflow-wrap:anywhere;color:#7debd9}
+a{color:#7debd9}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>⛓️ Blockchain Records</h1>
+<p>Certificate records connected through cryptographic hashes.</p>
+
+{% for block in chain %}
+<div class="block">
+<h3>Block #{{ block.index }}</h3>
+<p>Timestamp: {{ block.timestamp }}</p>
+<p>Previous Hash:</p>
+<div class="hash">{{ block.previous_hash }}</div>
+<p>Block Hash:</p>
+<div class="hash">{{ block.hash }}</div>
+<p>Data: {{ block.data }}</p>
+</div>
+{% endfor %}
+
+<p><a href="/">← Home</a> | <a href="/integrity">Check Blockchain Integrity</a></p>
+</div>
+</body>
+</html>

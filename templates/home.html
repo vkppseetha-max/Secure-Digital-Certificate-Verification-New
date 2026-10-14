@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SecureCert | Digital Certificate Verification</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+nav {
+    background: #071a38;
+    color: white;
+    padding: 18px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 8px;
+    font-size: 14px;
+}
+
+nav a:hover {
+    color: #38bdf8;
+}
+
+.hero {
+    padding: 75px 20px;
+    text-align: center;
+    color: white;
+    background: linear-gradient(135deg, #071a38, #164e8a, #087e9b);
+}
+
+.hero .tag {
+    display: inline-block;
+    padding: 9px 16px;
+    border: 1px solid #7dd3fc;
+    border-radius: 25px;
+    margin-bottom: 22px;
+    color: #bae6fd;
+    font-size: 13px;
+}
+
+.hero h1 {
+    font-size: clamp(30px, 5vw, 48px);
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.hero p {
+    max-width: 720px;
+    margin: 0 auto;
+    color: #dbeafe;
+    line-height: 1.8;
+    font-size: 16px;
+}
+
+.buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 14px 22px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.primary {
+    background: #38bdf8;
+    color: #082f49;
+}
+
+.secondary {
+    border: 1px solid white;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+.container {
+    max-width: 1150px;
+    margin: auto;
+    padding: 55px 20px;
+}
+
+.heading {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.heading h2 {
+    font-size: 30px;
+    margin-bottom: 12px;
+}
+
+.heading p {
+    color: #64748b;
+    line-height: 1.7;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 22px;
+}
+
+.card {
+    background: white;
+    padding: 27px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgba(15, 23, 42, 0.05);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.icon {
+    font-size: 35px;
+    margin-bottom: 18px;
+}
+
+.card h3 {
+    font-size: 19px;
+    margin-bottom: 12px;
+}
+
+.card p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+.card a {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #075985;
+    padding: 10px 15px;
+    border-radius: 7px;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.card a:hover {
+    background: #bae6fd;
+}
+
+.notice {
+    margin-top: 35px;
+    padding: 22px;
+    border-radius: 12px;
+    background: #e0f2fe;
+    color: #075985;
+    line-height: 1.8;
+    text-align: center;
+}
+
+.flash {
+    text-align: center;
+    padding: 12px;
+    color: #92400e;
+    background: #fef3c7;
+}
+
+footer {
+    padding: 25px 15px;
+    text-align: center;
+    background: #071a38;
+    color: #cbd5e1;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+@media (max-width: 600px) {
+    nav {
+        justify-content: center;
+        text-align: center;
+    }
+
+    nav div {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .hero {
+        padding: 55px 18px;
+    }
+
+    .container {
+        padding: 40px 16px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">🔐 SecureCert</div>
+
+    <div>
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('verify') }}">Verify</a>
+        <a href="{{ url_for('scan') }}">QR Scanner</a>
+
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('issue') }}">Issue Certificate</a>
+            <a href="{{ url_for('certificates') }}">Certificates</a>
+            <a href="{{ url_for('blockchain') }}">Blockchain</a>
+            <a href="{{ url_for('integrity') }}">Integrity</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ url_for('register') }}">Register</a>
+            <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
+{% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+{% endfor %}
+
+<section class="hero">
+    <span class="tag">BLOCKCHAIN • SHA-256 • DIGITAL TRUST</span>
+
+    <h1>Secure Digital Certificate<br>Verification System</h1>
+
+    <p>
+        Issue, manage and verify digital certificates using SHA-256 hashing
+        and a blockchain-style record chain. Check certificate authenticity
+        and detect changes in stored records.
+    </p>
+
+    <div class="buttons">
+        <a class="btn primary" href="{{ url_for('verify') }}">
+            ✓ Verify Certificate
+        </a>
+
+        <a class="btn secondary" href="{{ url_for('scan') }}">
+            📷 Scan QR Code
+        </a>
+
+        {% if session.get('user_id') %}
+            <a class="btn secondary" href="{{ url_for('issue') }}">
+                + Issue Certificate
+            </a>
+        {% else %}
+            <a class="btn secondary" href="{{ url_for('register') }}">
+                Create Account
+            </a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="container">
+    <div class="heading">
+        <h2>Explore SecureCert</h2>
+        <p>Choose a feature to continue.</p>
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <div class="icon">📷</div>
+            <h3>QR Code Scanner</h3>
+            <p>Scan a certificate QR code using your device camera.</p>
+            <a href="{{ url_for('scan') }}">Open Scanner →</a>
+        </div>
+
+        <div class="card">
+            <div class="icon">🔍</div>
+            <h3>Certificate Verification</h3>
+            <p>Check a certificate using its unique SHA-256 hash.</p>
+            <a href="{{ url_for('verify') }}">Verify Now →</a>
+        </div>
+
+        <div class="card">
+            <div class="icon">📜</div>
+            <h3>Issue Certificate</h3>
+            <p>Create a certificate record with a unique hash.</p>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('issue') }}">Issue Now →</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login to Continue →</a>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="icon">🗂️</div>
+            <h3>Certificate Records</h3>
+            <p>View the certificates stored in the database.</p>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('certificates') }}">View Records →</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login to Continue →</a>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="icon">⛓️</div>
+            <h3>Blockchain Records</h3>
+            <p>Inspect stored blocks and their linked hashes.</p>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('blockchain') }}">View Blockchain →</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login to Continue →</a>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="icon">🛡️</div>
+            <h3>Integrity Check</h3>
+            <p>Check whether stored block hashes and links are consistent.</p>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('integrity') }}">Check Integrity →</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login to Continue →</a>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="notice">
+        <strong>🔐 Security Note</strong><br>
+        Certificate verification checks the stored hash and blockchain-style
+        record. The current project uses a local record chain; it is not a
+        distributed blockchain network.
+    </div>
+</section>
+
+<footer>
+    <strong>SecureCert</strong><br>
+    Secure Digital Certificate Verification Using Blockchain and Hashing<br>
+    BCA Final Year Project
+</footer>
+
+</body>
+</html>

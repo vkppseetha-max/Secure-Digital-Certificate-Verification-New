@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blockchain Integrity</title>
+<style>
+body{font-family:Arial;background:#101a35;color:white;text-align:center;padding:40px}
+.box{max-width:600px;margin:auto;background:#ffffff12;padding:30px;border-radius:15px}
+a{color:#7debd9}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>Blockchain Integrity Check</h1>
+{% if valid %}
+<h2>✅ Blockchain is Valid</h2>
+<p>Block hashes and previous-hash links match.</p>
+{% else %}
+<h2>❌ Blockchain Integrity Failed</h2>
+<p>One or more blocks have been changed or corrupted.</p>
+{% endif %}
+<p><a href="/blockchain">View Blockchain</a></p>
+<p><a href="/">Home</a></p>
+</div>
+</body>
+</html>

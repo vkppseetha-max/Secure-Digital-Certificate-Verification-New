@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Certificates</title>
+<style>
+body{font-family:Arial;background:#101a35;color:white;padding:20px}
+.box{max-width:900px;margin:auto}
+.item{background:#ffffff12;padding:18px;margin:15px 0;border-radius:10px}
+.hash{overflow-wrap:anywhere;color:#7debd9}
+a{color:#7debd9}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>📜 Issued Certificates</h1>
+{% if rows %}
+{% for row in rows %}
+<div class="item">
+<h3>{{ row[0] }}</h3>
+<p>Course: {{ row[1] }}</p>
+<p>SHA-256 Hash:</p>
+<p class="hash">{{ row[2] }}</p>
+<p>Issue Date: {{ row[3] }}</p>
+</div>
+{% endfor %}
+{% else %}
+<p>No certificates issued yet.</p>
+{% endif %}
+<p><a href="/">← Home</a></p>
+</div>
+</body>
+</html>

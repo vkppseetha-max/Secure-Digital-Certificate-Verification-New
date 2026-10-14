@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify Certificate</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial;background:linear-gradient(135deg,#101a35,#174b67);color:white;margin:0;padding:25px}
+.box{max-width:550px;margin:50px auto;background:#ffffff12;padding:30px;border-radius:15px}
+h1{text-align:center}
+input{width:100%;padding:14px;margin:15px 0;border:0;border-radius:7px}
+button{width:100%;padding:14px;background:#21c7a8;border:0;border-radius:7px;font-weight:bold;cursor:pointer}
+a{color:#7debd9}
+.result{padding:15px;background:#ffffff12;border-radius:8px;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>🔍 Verify Certificate</h1>
+<p>Enter the certificate SHA-256 hash below.</p>
+
+<form method="POST" action="/verify">
+<input type="text" name="certificate_hash" placeholder="Paste certificate hash" value="{{ cert_hash }}" required>
+<button type="submit">Verify Certificate</button>
+</form>
+
+{% if result %}
+<div class="result">
+{% if result.valid %}
+<h2>✅ Certificate Verified</h2>
+<p>Student: {{ result.certificate[0] }}</p>
+<p>Course: {{ result.certificate[1] }}</p>
+<p>Hash: {{ result.certificate[2] }}</p>
+<p>Issue Date: {{ result.certificate[3] }}</p>
+{% else %}
+<h2>❌ Certificate Not Valid</h2>
+<p>No matching certificate was found in the records and blockchain.</p>
+{% endif %}
+</div>
+{% endif %}
+
+<p><a href="/">← Home</a></p>
+</div>
+</body>
+</html>

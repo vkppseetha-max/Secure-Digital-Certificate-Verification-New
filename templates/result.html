@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Certificate Generated | SecureCert</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#101a35,#174b67);color:white;padding:20px;margin:0}
+.box{max-width:650px;margin:30px auto;background:#ffffff12;padding:30px;border-radius:15px}
+.hash{overflow-wrap:anywhere;background:#071827;padding:15px;border-radius:8px}
+a{display:inline-block;background:#21c7a8;color:#071827;padding:12px;margin:8px;text-decoration:none;border-radius:7px}
+#qrcode{background:white;padding:12px;display:table;margin:15px auto;border-radius:8px}
+p{line-height:1.6}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="box">
+<h1>✅ Certificate Generated!</h1>
+<p><b>Student Name:</b> {{ name }}</p>
+<p><b>Course:</b> {{ course }}</p>
+<p><b>Issue Date:</b> {{ issue_date }}</p>
+<h3>Certificate SHA-256 Hash</h3>
+<div class="hash">{{ cert_hash }}</div>
+<p>Scan this QR code to open the certificate verification page.</p>
+<div id="qrcode" aria-label="Certificate verification QR code"></div>
+<a href="{{ url_for('verify', hash=cert_hash) }}">Verify Certificate</a>
+<a href="{{ url_for('home') }}">Home</a>
+</div>
+<script>
+const verifyUrl = window.location.origin + {{ url_for('verify', hash=cert_hash)|tojson }};
+if (window.QRCode) {
+  new QRCode(document.getElementById("qrcode"), {
+    text: verifyUrl, width: 210, height: 210
+  });
+} else {
+  document.getElementById("qrcode").textContent = "QR library unavailable. Save the hash above.";
+}
+</script>
+</body>
+</html>

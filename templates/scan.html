@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Certificate Scanner | SecureCert</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    padding:25px 15px;
+    font-family:Arial,sans-serif;
+    color:white;
+    background:linear-gradient(135deg,#071a38,#123f70,#087e9b);
+    min-height:100vh;
+}
+.container{
+    max-width:650px;
+    margin:30px auto;
+    padding:30px;
+    text-align:center;
+    background:rgba(255,255,255,.09);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:22px;
+}
+h1{font-size:28px}
+p{color:#dbeafe;line-height:1.7}
+#reader{
+    width:100%;
+    max-width:420px;
+    margin:25px auto;
+    overflow:hidden;
+    border-radius:12px;
+}
+button,.link{
+    display:inline-block;
+    margin:8px;
+    padding:13px 20px;
+    border:0;
+    border-radius:9px;
+    background:#38bdf8;
+    color:#082f49;
+    font-weight:bold;
+    text-decoration:none;
+    cursor:pointer;
+}
+#status{
+    margin-top:20px;
+    overflow-wrap:anywhere;
+}
+.note{font-size:13px}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h1>🔐 SecureCert Scanner</h1>
+    <p>Scan a certificate QR code to check its verification details.</p>
+
+    <div id="reader"></div>
+
+    <div id="status" aria-live="polite">
+        Press Start Scanner and allow camera access.
+    </div>
+
+    <button id="start">Start Scanner</button>
+    <button id="stop">Stop Scanner</button>
+    <br>
+    <a class="link" href="{{ url_for('verify') }}">Manual Verification</a>
+    <a class="link" href="{{ url_for('home') }}">Home</a>
+
+    <p class="note">
+        Camera scanning requires permission and usually HTTPS or localhost.
+    </p>
+</div>
+
+<script>
+let scanner = null;
+let running = false;
+
+const statusBox = document.getElementById("status");
+
+document.getElementById("start").addEventListener("click", async () => {
+    if (running) return;
+
+    try {
+        scanner = new Html5Qrcode("reader");
+        const cameras = await Html5Qrcode.getCameras();
+
+        if (!cameras.length) {
+            statusBox.textContent = "No camera found on this device.";
+            return;
+        }
+
+        running = true;
+        statusBox.textContent = "Camera started. Scan the certificate QR code.";
+
+        await scanner.start(
+            cameras[0].id,
+            { fps: 10, qrbox: { width: 230, height: 230 } },
+            (decodedText) => {
+                statusBox.textContent = "QR code scanned: " + decodedText;
+
+                try {
+                    const url = new URL(decodedText);
+
+                    if (url.origin === window.location.origin &&
+                        url.pathname === "/verify") {
+                        window.location.href = url.href;
+                    } else {
+                        statusBox.textContent =
+                            "QR scanned. Open Manual Verification to check the certificate hash.";
+                    }
+                } catch {
+                    statusBox.textContent =
+                        "QR scanned. Open Manual Verification to check the certificate hash.";
+                }
+
+                if (running) {
+                    scanner.stop().catch(() => {});
+                    running = false;
+                }
+            },
+            () => {}
+        );
+    } catch (error) {
+        running = false;
+        statusBox.textContent =
+            "Camera unavailable. Allow camera permission and try again. " +
+            error;
+    }
+});
+
+document.getElementById("stop").addEventListener("click", async () => {
+    if (scanner && running) {
+        try {
+            await scanner.stop();
+            statusBox.textContent = "Scanner stopped.";
+        } catch (error) {
+            statusBox.textContent = "Could not stop scanner.";
+        }
+        running = false;
+    }
+});
+</script>
+</body>
+</html>
